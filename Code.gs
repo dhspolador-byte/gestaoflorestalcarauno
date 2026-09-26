@@ -52,8 +52,10 @@ function doGet() {
   // Inclui a primeira consulta na resposta, sem aguardar a ponte assíncrona do navegador.
   const json = JSON.stringify(initial).replace(/</g, '\\u003c')
     .replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
-  return HtmlService.createHtmlOutput(html.replace('<!-- APP_BOOTSTRAP -->', function () {
-    return '<script type="application/json" id="appBootstrap">' + json + '</script>';
+  // Usa um script normal antes do código da interface: comentários e blocos de
+  // dados não executáveis podem desaparecer na conversão feita pelo HtmlService.
+  return HtmlService.createHtmlOutput(html.replace(/<script\b/i, function (tag) {
+    return '<script>window.CARAUNO_INITIAL_DATA = ' + json + ';</script>' + tag;
   }))
     .setTitle('Caraúno | Gestão Florestal')
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');

@@ -44,6 +44,18 @@ Referências: [HTML Service](https://developers.google.com/apps-script/reference
 4. Clique em **Implantar > Nova implantação > Aplicativo da web**. Execute como a conta proprietária e limite o acesso às pessoas ou ao domínio autorizado. Não publique uma planilha financeira para acesso público.
 5. Abra a URL da implantação. Para publicar atualizações posteriores, crie uma nova versão da implantação.
 
+## Correção de carregamento contínuo
+
+O pacote `publicacao/CodigoCompleto.gs` foi atualizado para incluir a primeira consulta no HTML servido por `doGet`. Assim, o dashboard inicial não depende da resposta assíncrona de `google.script.run`. As consultas seguintes exibem um erro persistente e uma opção de tentar novamente quando o Google não responde em 20 segundos. O indicador lateral só informa conexão após receber dados válidos.
+
+A primeira publicação dessa correção entregou a interface nova sem o bloco de dados iniciais. O pacote foi ajustado novamente para inserir `window.CARAUNO_INITIAL_DATA` em um script executável antes da interface, com escape dos dados. Essa revisão não depende de comentários HTML ou de blocos `application/json` preservados pelo Google.
+
+Após a republicação pelo usuário, a consulta ao endereço `/exec` confirmou HTTP 200, o bloco inicial antes do código da interface, 30 lançamentos, 21 categorias e ausência de erro do servidor. Para setembro de 2026, retornou R$ 29.041,99 em despesas e R$ 153.643,00 em investimentos. A sintaxe dos dois scripts entregues também foi validada. Essa verificação confirma a leitura e a entrega dos dados iniciais; não executou cadastros ou exclusões pelo navegador.
+
+As consultas abrem a base sem recriar abas, migrar dados ou regravar o resumo. A preparação continua em `setupDatabase`; gravações e exclusões continuam atualizando o resumo mensal. A atualização exige substituir o script e publicar uma nova versão da implantação existente. A conexão com o Google Sheets não permite publicar o Apps Script.
+
+Validação local: `scripts/test_loading.mjs` verifica os 30 registros importados, o HTML com dados iniciais, falhas de permissão, ausência de abas, ponte indisponível, consultas sem retorno, respostas inválidas e respostas antigas. Esses testes usam serviços simulados; não constituem uma confirmação da execução da nova versão no Google.
+
 ## Telas
 
 - Dashboard: receitas, despesas, resultado operacional, investimentos, movimento mensal e principais custos.

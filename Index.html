@@ -220,8 +220,8 @@
   </div>
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <!-- APP_BOOTSTRAP -->
   <script>
+    const APP_URL = 'https://script.google.com/macros/s/AKfycbyyHWN_kJq1SBdgdCVUeM2GcjW8q6tHAJjm9aLAmp7UVyFObSz5Hb1k9PgSq3-w0kZdwA/exec';
     const state = { route: 'dashboard', data: null, page: 1, pageSize: 25, listType: '', listStatus: '', listCategory: '', search: '', fromDate: '', toDate: '', editing: null, costMode: '' };
     const routeNames = { dashboard: 'Dashboard', costs: 'Despesas e custos', revenues: 'Receitas', entry: 'Novo lançamento', list: 'Lista de lançamentos' };
     const content = document.getElementById('content');
@@ -234,10 +234,10 @@
     }
 
     function startApp() {
-      const bootstrap = document.getElementById('appBootstrap');
-      if (!bootstrap) return loadDashboard();
+      const initial = window.CARAUNO_INITIAL_DATA;
+      if (initial === undefined) return loadDashboard();
       try {
-        const initial = JSON.parse(bootstrap.textContent);
+        if (!initial) throw new Error('Os dados iniciais não foram recebidos. Recarregue o aplicativo.');
         if (initial.error) throw new Error(initial.error);
         acceptAppData(initial.data);
         renderDashboard(state.data);
@@ -283,9 +283,16 @@
 
     function showLoadError(error, target) {
       const message = error && error.message ? error.message : String(error || 'Falha ao consultar os dados.');
+      const localFile = window.location.protocol === 'file:';
       setConnection('error');
       const region = target || content;
-      region.innerHTML = '<div class="panel"><div class="empty-state" role="alert"><strong>Não foi possível carregar os dados.</strong><br><br>' + escapeHtml(message) + '<br><br><button class="button button-primary" onclick="navigate(state.route)">Tentar novamente</button></div></div>';
+      const guidance = localFile
+        ? 'Este arquivo aberto diretamente no computador é apenas a interface. Para consultar e gravar dados, abra o aplicativo conectado ao Google Sheets.'
+        : escapeHtml(message);
+      const action = localFile
+        ? '<a class="button button-primary" href="' + APP_URL + '" target="_blank" rel="noopener">Abrir aplicativo conectado</a>'
+        : '<button class="button button-primary" onclick="navigate(state.route)">Tentar novamente</button>';
+      region.innerHTML = '<div class="panel"><div class="empty-state" role="alert"><strong>' + (localFile ? 'Abra a versão conectada' : 'Não foi possível carregar os dados.') + '</strong><br><br>' + guidance + '<br><br>' + action + '</div></div>';
     }
 
     document.querySelectorAll('.nav-button').forEach(function (button) {
