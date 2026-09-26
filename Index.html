@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --forest: #07583f;
+      --forest-deep: #073f30;
+      --leaf: #eaf3ed;
+      --earth: #a86e43;
+      --earth-pale: #f5eee7;
+      --ink: #202923;
+      --muted: #758078;
+      --line: #e3e8e2;
+      --paper: #fbfcf9;
+      --white: #fff;
+      --red: #b74e3d;
+      --shadow: 0 12px 32px rgba(29, 48, 35, .07);
+      font-family: 'DM Sans', sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; background: var(--paper); color: var(--ink); }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    .app { min-height: 100vh; }
+    .sidebar {
+      position: fixed; inset: 0 auto 0 0; z-index: 5; display: flex; width: 248px; flex-direction: column;
+      padding: 28px 17px 18px; background: var(--forest-deep); color: white;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 2px 10px 30px; }
+    .brand-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid rgba(255,255,255,.45); border-radius: 50%; color: #d5e4d5; font: 600 22px 'Fraunces', serif; }
+    .brand-name { font: 600 21px 'Fraunces', serif; letter-spacing: 0; }
+    .brand-caption { margin-top: 3px; color: #afc6b9; font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; }
+    .nav-label { padding: 0 12px 10px; color: #9bb9a8; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; }
+    .nav-list { display: grid; gap: 5px; }
+    .nav-button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border: 0; border-radius: 5px; background: transparent; color: #d2ded6; text-align: left; font-size: 13px; transition: background .18s, color .18s; }
+    .nav-button:hover { background: rgba(255,255,255,.08); color: white; }
+    .nav-button.active { background: #fff; color: var(--forest-deep); font-weight: 700; }
+    .nav-glyph { display: grid; width: 22px; height: 22px; place-items: center; font: 600 13px 'Fraunces', serif; }
+    .sidebar-bottom { margin-top: auto; padding: 16px 12px 0; border-top: 1px solid rgba(255,255,255,.17); color: #adc2b4; font-size: 11px; line-height: 1.6; }
+    .side-status { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; color: #e5eee8; font-weight: 600; }
+    .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #a5cf83; }
+    .online-dot.pending { background: #d2b36b; }
+    .online-dot.error { background: #dc887c; }
+    .main { min-height: 100vh; margin-left: 248px; }
+    .topbar { display: flex; min-height: 72px; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 36px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.78); }
+    .top-context { color: var(--muted); font-size: 12px; }
+    .top-context strong { color: var(--ink); font-weight: 600; }
+    .user-chip { display: flex; align-items: center; gap: 9px; color: #526057; font-size: 12px; }
+    .user-avatar { display: grid; width: 31px; height: 31px; place-items: center; border-radius: 50%; background: var(--leaf); color: var(--forest); font-size: 11px; font-weight: 700; }
+    .content { width: min(1230px, 100%); margin: 0 auto; padding: 32px 36px 52px; }
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 25px; }
+    .eyebrow { margin: 0 0 7px; color: var(--earth); font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 6px; font: 500 32px 'Fraunces', serif; letter-spacing: 0; }
+    .page-description { margin: 0; color: var(--muted); font-size: 13px; }
+    .month-select { padding: 9px 34px 9px 12px; border: 1px solid var(--line); border-radius: 4px; background: white; color: var(--ink); font-size: 12px; }
+    .button { display: inline-flex; min-height: 39px; align-items: center; justify-content: center; gap: 8px; padding: 0 14px; border: 1px solid transparent; border-radius: 4px; font-size: 12px; font-weight: 700; transition: transform .15s, background .15s; }
+    .button:active { transform: translateY(1px); }
+    .button-primary { background: var(--forest); color: white; }
+    .button-primary:hover { background: var(--forest-deep); }
+    .button-secondary { border-color: var(--line); background: white; color: var(--ink); }
+    .button-secondary:hover { background: var(--leaf); }
+    .button-danger { border-color: #edd7d2; background: white; color: var(--red); }
+    .button-small { min-height: 30px; padding: 0 9px; font-size: 11px; }
+    .metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 22px; }
+    .metric { min-height: 121px; padding: 17px 18px; border: 1px solid var(--line); border-radius: 5px; background: var(--white); box-shadow: 0 2px 5px rgba(20,40,25,.02); }
+    .metric-label { display: flex; align-items: center; gap: 7px; margin-bottom: 17px; color: var(--muted); font-size: 11px; }
+    .metric-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--forest); }
+    .metric-dot.earth { background: var(--earth); }
+    .metric-dot.red { background: #c46956; }
+    .metric-value { overflow: hidden; color: var(--ink); font-size: 22px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+    .metric-note { margin-top: 5px; color: #8b958d; font-size: 10px; }
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .85fr); gap: 15px; }
+    .panel { min-width: 0; padding: 19px; border: 1px solid var(--line); border-radius: 5px; background: white; }
+    .panel-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+    .panel-title h2 { margin: 0 0 4px; font: 600 16px 'Fraunces', serif; }
+    .panel-title p { margin: 0; color: var(--muted); font-size: 11px; }
+    .legend { display: flex; gap: 13px; color: var(--muted); font-size: 10px; }
+    .legend span { display: flex; align-items: center; gap: 5px; }
+    .legend i { width: 8px; height: 8px; border-radius: 2px; background: var(--forest); }
+    .legend .legend-expense { background: #bc8b64; }
+    .chart { display: grid; height: 205px; grid-template-columns: repeat(6, minmax(0,1fr)); gap: 12px; padding: 5px 3px 0; border-bottom: 1px solid var(--line); }
+    .chart-month { display: flex; min-width: 0; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; }
+    .chart-bars { display: flex; width: min(45px, 90%); height: 165px; align-items: flex-end; justify-content: center; gap: 4px; }
+    .chart-bar { width: 12px; min-height: 2px; border-radius: 3px 3px 0 0; background: var(--forest); transition: height .35s; }
+    .chart-bar.expense { background: #bc8b64; }
+    .chart-label { padding-bottom: 8px; color: var(--muted); font-size: 10px; }
+    .cost-list { display: grid; gap: 15px; }
+    .cost-row { display: grid; gap: 6px; }
+    .cost-meta { display: flex; justify-content: space-between; gap: 10px; font-size: 11px; }
+    .cost-name { overflow: hidden; color: #49564d; text-overflow: ellipsis; white-space: nowrap; }
+    .cost-value { flex: none; font-weight: 600; }
+    .cost-track { height: 5px; overflow: hidden; border-radius: 4px; background: #edf0eb; }
+    .cost-fill { height: 100%; border-radius: inherit; background: var(--earth); }
+    .lower-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 15px; margin-top: 15px; }
+    .table-wrap { width: 100%; overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 10px 11px; border-bottom: 1px solid var(--line); color: #7e8981; font-size: 10px; font-weight: 700; letter-spacing: .35px; text-transform: uppercase; white-space: nowrap; }
+    td { padding: 12px 11px; border-bottom: 1px solid #edf0ec; color: #425047; font-size: 11px; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: 0; }
+    .cell-main { display: block; max-width: 310px; overflow: hidden; color: var(--ink); font-size: 12px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+    .cell-sub { display: block; max-width: 260px; margin-top: 3px; overflow: hidden; color: #8b958d; text-overflow: ellipsis; white-space: nowrap; }
+    .amount { color: var(--ink); font-weight: 600; white-space: nowrap; }
+    .pill { display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 20px; background: var(--leaf); color: var(--forest); font-size: 10px; white-space: nowrap; }
+    .pill-pending { background: var(--earth-pale); color: #885c3b; }
+    .pill-late { background: #f9e8e4; color: #a83f31; }
+    .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 13px; }
+    .field-control { min-height: 37px; padding: 0 10px; border: 1px solid var(--line); border-radius: 4px; outline: none; background: #fff; color: var(--ink); font-size: 11px; }
+    .field-control:focus, .form-field:focus { border-color: #7eaa8f; box-shadow: 0 0 0 3px rgba(7,88,63,.08); }
+    .search-control { flex: 1 1 200px; }
+    .toolbar select { min-width: 125px; }
+    .segmented { display: flex; gap: 4px; padding: 3px; border: 1px solid var(--line); border-radius: 5px; background: white; }
+    .segment { padding: 7px 11px; border: 0; border-radius: 3px; background: transparent; color: var(--muted); font-size: 11px; }
+    .segment.active { background: var(--leaf); color: var(--forest); font-weight: 700; }
+    .table-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 13px; color: var(--muted); font-size: 11px; }
+    .pager { display: flex; gap: 6px; }
+    .pager button { width: 31px; height: 30px; border: 1px solid var(--line); border-radius: 4px; background: white; color: var(--ink); }
+    .pager button:disabled { cursor: default; opacity: .4; }
+    .form-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(250px, .75fr); gap: 16px; align-items: start; }
+    .form-section { padding: 21px; border: 1px solid var(--line); border-radius: 5px; background: white; }
+    .form-section h2 { margin-bottom: 4px; font: 600 17px 'Fraunces', serif; }
+    .form-hint { margin-bottom: 20px; color: var(--muted); font-size: 11px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px 12px; }
+    .form-group { display: grid; gap: 6px; min-width: 0; }
+    .form-group.full { grid-column: 1 / -1; }
+    .form-group label { color: #536057; font-size: 11px; font-weight: 600; }
+    .form-field { width: 100%; min-height: 39px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 4px; outline: none; background: white; color: var(--ink); font-size: 12px; }
+    textarea.form-field { min-height: 74px; resize: vertical; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 19px; padding-top: 15px; border-top: 1px solid var(--line); }
+    .form-aside { padding: 18px; border-left: 2px solid var(--earth); background: #f6f7f2; }
+    .form-aside h3 { margin-bottom: 8px; font: 600 15px 'Fraunces', serif; }
+    .form-aside p { margin: 0; color: #67736a; font-size: 11px; line-height: 1.65; }
+    .empty-state { padding: 40px 20px; color: var(--muted); text-align: center; font-size: 12px; }
+    .loading { display: grid; min-height: 240px; place-items: center; color: var(--muted); font-size: 12px; }
+    .spinner { width: 22px; height: 22px; margin: 0 auto 10px; border: 2px solid #dce6dc; border-top-color: var(--forest); border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #toast { position: fixed; right: 22px; bottom: 22px; z-index: 15; max-width: min(390px, calc(100vw - 32px)); padding: 12px 16px; border-radius: 4px; background: var(--forest-deep); box-shadow: var(--shadow); color: white; font-size: 12px; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .2s, transform .2s; }
+    #toast.show { opacity: 1; transform: translateY(0); }
+    #toast.error { background: #9d3d30; }
+    .mobile-brand { display: none; }
+    @media (max-width: 1050px) {
+      .sidebar { width: 218px; }
+      .main { margin-left: 218px; }
+      .content { padding-right: 24px; padding-left: 24px; }
+      .topbar { padding-right: 24px; padding-left: 24px; }
+      .metrics { grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .form-layout { grid-template-columns: minmax(0, 1fr); }
+      .form-aside { border-left-width: 2px; }
+    }
+    @media (max-width: 760px) {
+      .sidebar { position: sticky; top: 0; width: 100%; height: auto; padding: 10px 12px; }
+      .brand { padding: 0 4px 9px; }
+      .brand-mark { width: 30px; height: 30px; font-size: 18px; }
+      .brand-name { font-size: 18px; }
+      .brand-caption { font-size: 8px; }
+      .nav-label, .sidebar-bottom { display: none; }
+      .nav-list { display: flex; gap: 4px; overflow-x: auto; padding-bottom: 1px; }
+      .nav-button { width: auto; flex: 0 0 auto; gap: 7px; padding: 8px 9px; font-size: 11px; white-space: nowrap; }
+      .nav-glyph { width: 16px; height: 16px; }
+      .main { margin-left: 0; }
+      .topbar { min-height: 48px; padding: 9px 16px; }
+      .content { padding: 23px 15px 38px; }
+      .page-head { align-items: flex-start; flex-direction: column; gap: 14px; }
+      h1 { font-size: 28px; }
+      .dashboard-grid { grid-template-columns: minmax(0,1fr); }
+      .chart { height: 175px; gap: 6px; }
+      .chart-bars { height: 135px; }
+      .chart-bar { width: 10px; }
+      .panel { padding: 15px; }
+      .panel-title { flex-direction: column; }
+      .table-footer { align-items: flex-start; flex-direction: column; }
+      .toolbar select { flex: 1 1 125px; }
+    }
+    @media (max-width: 470px) {
+      .metrics { gap: 8px; }
+      .metric { min-height: 105px; padding: 12px; }
+      .metric-label { margin-bottom: 12px; font-size: 10px; }
+      .metric-value { font-size: 17px; }
+      .form-section { padding: 15px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .form-group.full { grid-column: auto; }
+      .legend { gap: 8px; }
+      .cell-main { max-width: 190px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">C</div>
+        <div><div class="brand-name">Caraúno</div><div class="brand-caption">Gestão florestal</div></div>
+      </div>
+      <div class="nav-label">Gestão</div>
+      <nav class="nav-list" aria-label="Navegação principal">
+        <button class="nav-button active" data-route="dashboard"><span class="nav-glyph">01</span>Dashboard</button>
+        <button class="nav-button" data-route="costs"><span class="nav-glyph">02</span>Despesas e custos</button>
+        <button class="nav-button" data-route="revenues"><span class="nav-glyph">03</span>Receitas</button>
+        <button class="nav-button" data-route="entry"><span class="nav-glyph">04</span>Novo lançamento</button>
+        <button class="nav-button" data-route="list"><span class="nav-glyph">05</span>Lista de lançamentos</button>
+      </nav>
+      <div class="sidebar-bottom"><div class="side-status"><i id="connectionDot" class="online-dot pending"></i><span id="connectionLabel">Conectando à base</span></div>Dados salvos diretamente na planilha de gestão.</div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><div class="top-context">Operações <span aria-hidden="true">/</span> <strong id="contextLabel">Dashboard</strong></div><div class="user-chip"><span>Fazenda Caraúno</span><span class="user-avatar">FC</span></div></header>
+      <div class="content" id="content" aria-live="polite"><div class="loading"><div><div class="spinner"></div>Conectando à base de dados...</div></div></div>
+    </main>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- APP_BOOTSTRAP -->
+  <script>
+    const state = { route: 'dashboard', data: null, page: 1, pageSize: 25, listType: '', listStatus: '', listCategory: '', search: '', fromDate: '', toDate: '', editing: null, costMode: '' };
+    const routeNames = { dashboard: 'Dashboard', costs: 'Despesas e custos', revenues: 'Receitas', entry: 'Novo lançamento', list: 'Lista de lançamentos' };
+    const content = document.getElementById('content');
+    let toastTimer;
+    let viewRequestId = 0;
+
+    function setConnection(status) {
+      document.getElementById('connectionDot').className = 'online-dot' + (status === 'connected' ? '' : ' ' + status);
+      document.getElementById('connectionLabel').textContent = status === 'connected' ? 'Base conectada' : status === 'error' ? 'Falha na consulta' : 'Conectando à base';
+    }
+
+    function startApp() {
+      const bootstrap = document.getElementById('appBootstrap');
+      if (!bootstrap) return loadDashboard();
+      try {
+        const initial = JSON.parse(bootstrap.textContent);
+        if (initial.error) throw new Error(initial.error);
+        acceptAppData(initial.data);
+        renderDashboard(state.data);
+      } catch (error) {
+        showLoadError(error);
+      }
+    }
+
+    function acceptAppData(data) {
+      if (!data || !data.stats || !Array.isArray(data.monthly) || !Array.isArray(data.accounts) || !Array.isArray(data.recent)) {
+        throw new Error('A consulta retornou uma resposta incompleta. Recarregue o aplicativo.');
+      }
+      state.data = data;
+      setConnection('connected');
+    }
+
+    // Somente consultas: gravações não são repetidas automaticamente após um tempo limite.
+    function runRead(method, argument, success, failure) {
+      let settled = false;
+      const reject = function (error) {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        failure(error);
+      };
+      const timer = setTimeout(function () {
+        reject(new Error('O Google não respondeu à consulta em 20 segundos. Recarregue o aplicativo; se continuar, confira as autorizações da implantação.'));
+      }, 20000);
+      try {
+        if (typeof google === 'undefined' || !google.script || !google.script.run) {
+          throw new Error('A conexão com o Google não está disponível. Abra o link publicado do aplicativo.');
+        }
+        const runner = google.script.run.withSuccessHandler(function (result) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          try { success(result); } catch (error) { failure(error); }
+        }).withFailureHandler(reject);
+        if (argument === undefined) runner[method]();
+        else runner[method](argument);
+      } catch (error) { reject(error); }
+    }
+
+    function showLoadError(error, target) {
+      const message = error && error.message ? error.message : String(error || 'Falha ao consultar os dados.');
+      setConnection('error');
+      const region = target || content;
+      region.innerHTML = '<div class="panel"><div class="empty-state" role="alert"><strong>Não foi possível carregar os dados.</strong><br><br>' + escapeHtml(message) + '<br><br><button class="button button-primary" onclick="navigate(state.route)">Tentar novamente</button></div></div>';
+    }
+
+    document.querySelectorAll('.nav-button').forEach(function (button) {
+      button.addEventListener('click', function () { navigate(button.dataset.route); });
+    });
+
+    function navigate(route) {
+      viewRequestId += 1;
+      state.route = route;
+      state.page = 1;
+      state.editing = null;
+      document.querySelectorAll('.nav-button').forEach(function (button) {
+        button.classList.toggle('active', button.dataset.route === route);
+      });
+      document.getElementById('contextLabel').textContent = routeNames[route];
+      if (route === 'entry') renderEntry();
+      else if (route === 'dashboard') loadDashboard();
+      else renderCollection();
+    }
+
+    function loadDashboard() {
+      const requestId = ++viewRequestId;
+      setConnection('pending');
+      content.innerHTML = loadingMarkup();
+      runRead('getAppData', undefined, function (data) {
+        if (requestId !== viewRequestId) return;
+        acceptAppData(data);
+        renderDashboard(data);
+      }, function (error) { if (requestId === viewRequestId) showLoadError(error); });
+    }
+
+    function loadingMarkup() {
+      return '<div class="loading"><div><div class="spinner"></div>Carregando informações...</div></div>';
+    }
+
+    function renderDashboard(data) {
+      const stats = data.stats;
+      const total = Math.max(1, ...data.monthly.map(function (month) { return Math.max(month.revenue, month.expenses); }));
+      const bars = data.monthly.map(function (month) {
+        const revenueHeight = month.revenue ? Math.max(4, month.revenue / total * 100) : 2;
+        const expenseHeight = month.expenses ? Math.max(4, month.expenses / total * 100) : 2;
+        return '<div class="chart-month"><div class="chart-bars" title="Receitas ' + money(month.revenue) + ' | Despesas ' + money(month.expenses) + '"><div class="chart-bar" style="height:' + revenueHeight + '%"></div><div class="chart-bar expense" style="height:' + expenseHeight + '%"></div></div><div class="chart-label">' + escapeHtml(month.label) + '</div></div>';
+      }).join('');
+      const top = data.topCosts.length ? data.topCosts : [];
+      const maxCost = top.length ? top[0].value : 1;
+      const costs = top.length ? top.map(function (item) {
+        return '<div class="cost-row"><div class="cost-meta"><span class="cost-name">' + escapeHtml(item.category) + '</span><span class="cost-value">' + money(item.value) + '</span></div><div class="cost-track"><div class="cost-fill" style="width:' + Math.max(3, item.value / maxCost * 100) + '%"></div></div></div>';
+      }).join('') : '<div class="empty-state">Sem despesas neste mês.</div>';
+      content.innerHTML = '<section class="page-head"><div><p class="eyebrow">Visão geral · ' + escapeHtml(capitalize(data.monthLabel)) + '</p><h1>Bom dia, Caraúno.</h1><p class="page-description">Acompanhe o movimento financeiro e a operação da fazenda.</p></div><button class="button button-primary" onclick="navigate(\'entry\')"><span aria-hidden="true">＋</span>Novo lançamento</button></section>' +
+        '<section class="metrics" aria-label="Resumo do mês">' +
+        metric('Receitas', stats.revenue, 'Neste mês', '') +
+        metric('Despesas operacionais', stats.expenses, 'Neste mês', 'earth') +
+        metric('Resultado operacional', data.result, 'Receitas menos despesas', data.result < 0 ? 'red' : '') +
+        metric('Investimentos', stats.investments, 'Neste mês', 'earth') + '</section>' +
+        '<section class="dashboard-grid"><div class="panel"><div class="panel-title"><div><h2>Movimento financeiro</h2><p>Receitas e despesas por competência</p></div><div class="legend"><span><i></i>Receitas</span><span><i class="legend-expense"></i>Despesas</span></div></div><div class="chart">' + bars + '</div></div>' +
+        '<div class="panel"><div class="panel-title"><div><h2>Custos do mês</h2><p>Principais categorias de despesa</p></div></div><div class="cost-list">' + costs + '</div></div></section>' +
+        '<section class="lower-grid"><div class="panel"><div class="panel-title"><div><h2>Últimos lançamentos</h2><p>' + data.count + ' registros na base</p></div><button class="button button-secondary button-small" onclick="navigate(\'list\')">Ver lista</button></div>' + transactionTable(data.recent, false) + '</div></section>';
+    }
+
+    function metric(label, amount, note, tone) {
+      return '<article class="metric"><div class="metric-label"><i class="metric-dot ' + tone + '"></i>' + label + '</div><div class="metric-value">' + money(amount) + '</div><div class="metric-note">' + note + '</div></article>';
+    }
+
+    function renderCollection() {
+      const isRevenue = state.route === 'revenues';
+      const isCosts = state.route === 'costs';
+      const title = isRevenue ? 'Receitas' : isCosts ? 'Despesas e custos' : 'Lista de lançamentos';
+      const description = isRevenue ? 'Vendas, fretes e outras entradas da operação.' : isCosts ? 'Custos operacionais e investimentos da fazenda.' : 'Consulte, filtre e atualize os registros da empresa.';
+      let type = isRevenue ? 'Receita' : state.route === 'list' ? state.listType : '';
+      if (isCosts && state.costMode) type = state.costMode;
+      const categoryOptions = (state.data ? state.data.accounts : []).filter(function (account) { return !type || account.type === type; });
+      content.innerHTML = '<section class="page-head"><div><p class="eyebrow">Financeiro</p><h1>' + title + '</h1><p class="page-description">' + description + '</p></div><button class="button button-primary" onclick="navigate(\'entry\')"><span aria-hidden="true">＋</span>Novo lançamento</button></section>' +
+        (isCosts ? '<div class="toolbar"><div class="segmented" role="group" aria-label="Tipo de custo"><button class="segment ' + (state.costMode === '' ? 'active' : '') + '" data-cost="">Todos</button><button class="segment ' + (state.costMode === 'Despesa' ? 'active' : '') + '" data-cost="Despesa">Despesas</button><button class="segment ' + (state.costMode === 'Investimento' ? 'active' : '') + '" data-cost="Investimento">Investimentos</button></div></div>' : '') +
+        '<section class="panel"><div class="toolbar"><input class="field-control search-control" id="searchFilter" type="search" placeholder="Buscar descrição, documento ou fornecedor" value="' + escapeAttr(state.search) + '"><input class="field-control" id="dateFromFilter" type="date" aria-label="Data inicial" title="Data inicial" value="' + escapeAttr(state.fromDate) + '"><input class="field-control" id="dateToFilter" type="date" aria-label="Data final" title="Data final" value="' + escapeAttr(state.toDate) + '"><select class="field-control" id="statusFilter"><option value="">Todas as situações</option><option value="Pago" ' + selected(state.listStatus, 'Pago') + '>Pago</option><option value="A pagar" ' + selected(state.listStatus, 'A pagar') + '>A pagar</option></select><select class="field-control" id="categoryFilter"><option value="">Todas as categorias</option>' + categoryOptions.map(function (account) { return '<option value="' + escapeAttr(account.category) + '" ' + selected(state.listCategory, account.category) + '>' + escapeHtml(account.category) + '</option>'; }).join('') + '</select></div><div id="tableRegion">' + loadingMarkup() + '</div></section>';
+      if (isCosts) document.querySelectorAll('[data-cost]').forEach(function (button) {
+        button.addEventListener('click', function () { state.costMode = button.dataset.cost; state.page = 1; renderCollection(); });
+      });
+      document.getElementById('searchFilter').addEventListener('input', debounce(function (event) { state.search = event.target.value; state.page = 1; loadCollectionRows(); }, 250));
+      document.getElementById('statusFilter').addEventListener('change', function (event) { state.listStatus = event.target.value; state.page = 1; loadCollectionRows(); });
+      document.getElementById('categoryFilter').addEventListener('change', function (event) { state.listCategory = event.target.value; state.page = 1; loadCollectionRows(); });
+      document.getElementById('dateFromFilter').addEventListener('change', function (event) { state.fromDate = event.target.value; state.page = 1; loadCollectionRows(); });
+      document.getElementById('dateToFilter').addEventListener('change', function (event) { state.toDate = event.target.value; state.page = 1; loadCollectionRows(); });
+      loadCollectionRows();
+    }
+
+    function loadCollectionRows() {
+      const requestId = ++viewRequestId;
+      const type = state.route === 'revenues' ? 'Receita' : state.route === 'costs' ? state.costMode : state.listType;
+      const filters = {
+        type: type, status: document.getElementById('statusFilter').value,
+        category: document.getElementById('categoryFilter').value,
+        from: state.fromDate, to: state.toDate,
+        search: state.search, page: state.page, pageSize: state.pageSize
+      };
+      runRead('listTransactions', filters, function (result) {
+        if (requestId !== viewRequestId) return;
+        const tableRegion = document.getElementById('tableRegion');
+        if (!tableRegion) return;
+        if (!result || !Array.isArray(result.items)) throw new Error('A consulta de lançamentos retornou uma resposta incompleta.');
+        setConnection('connected');
+        tableRegion.innerHTML = transactionTable(result.items, true) + '<div class="table-footer"><span>' + result.total + ' lançamento(s) · página ' + result.page + ' de ' + result.pages + '</span><div class="pager"><button aria-label="Página anterior" ' + (result.page <= 1 ? 'disabled' : '') + ' onclick="changePage(-1)">‹</button><button aria-label="Próxima página" ' + (result.page >= result.pages ? 'disabled' : '') + ' onclick="changePage(1)">›</button></div></div>';
+      }, function (error) {
+        if (requestId !== viewRequestId) return;
+        const region = document.getElementById('tableRegion');
+        if (region) showLoadError(error, region);
+      });
+    }
+
+    function changePage(delta) { state.page += delta; loadCollectionRows(); }
+
+    function transactionTable(items, actions) {
+      if (!items || !items.length) return '<div class="empty-state">Nenhum lançamento encontrado.</div>';
+      const body = items.map(function (item) {
+        const late = item.status !== 'Pago' && item.dueDate && item.dueDate < new Date().toISOString().slice(0, 10);
+        const statusClass = late ? 'pill-late' : item.status === 'Pago' ? '' : 'pill-pending';
+        const typeLabel = item.type === 'Investimento' ? 'Investimento' : item.type;
+        const actionCell = actions ? '<td><div style="display:flex;gap:5px"><button class="button button-secondary button-small" aria-label="Editar lançamento" onclick="editTransaction(\'' + escapeAttr(item.id) + '\')">Editar</button><button class="button button-danger button-small" aria-label="Excluir lançamento" onclick="removeTransaction(\'' + escapeAttr(item.id) + '\')">Excluir</button></div></td>' : '';
+        return '<tr><td><span class="cell-main">' + escapeHtml(item.description || item.category) + '</span><span class="cell-sub">' + escapeHtml(item.counterparty || item.document || 'Sem fornecedor/cliente') + '</span></td><td>' + escapeHtml(typeLabel) + '</td><td>' + escapeHtml(item.category) + '</td><td>' + formatDate(item.date) + '</td><td><span class="pill ' + statusClass + '">' + (late ? 'Vencido' : escapeHtml(item.status)) + '</span></td><td class="amount">' + money(item.value) + '</td>' + actionCell + '</tr>';
+      }).join('');
+      return '<div class="table-wrap"><table><thead><tr><th>Descrição / parte</th><th>Tipo</th><th>Categoria</th><th>Data</th><th>Situação</th><th>Valor</th>' + (actions ? '<th>Ações</th>' : '') + '</tr></thead><tbody>' + body + '</tbody></table></div>';
+    }
+
+    function renderEntry(record) {
+      state.editing = record || null;
+      const item = record || { type: 'Despesa', status: 'A pagar', date: today(), dueDate: today() };
+      const editing = Boolean(record);
+      const accountTypes = state.data ? state.data.accounts : [];
+      content.innerHTML = '<section class="page-head"><div><p class="eyebrow">Financeiro · registro</p><h1>' + (editing ? 'Editar lançamento' : 'Novo lançamento') + '</h1><p class="page-description">Registre a movimentação para manter o caixa e os relatórios atualizados.</p></div></section>' +
+        '<form id="entryForm" class="form-layout"><section class="form-section"><h2>Dados do lançamento</h2><p class="form-hint">Os campos marcados com * são obrigatórios.</p><div class="form-grid">' +
+        '<div class="form-group"><label for="entryType">Tipo *</label><select class="form-field" id="entryType" required>' + ['Receita', 'Despesa', 'Investimento'].map(function (type) { return '<option ' + selected(item.type, type) + '>' + type + '</option>'; }).join('') + '</select></div>' +
+        '<div class="form-group"><label for="entryCategory">Categoria *</label><select class="form-field" id="entryCategory" required></select></div>' +
+        '<div class="form-group"><label for="entryDate">Data de competência *</label><input class="form-field" id="entryDate" type="date" value="' + escapeAttr(item.date || today()) + '" required></div>' +
+        '<div class="form-group"><label for="entryDueDate">Vencimento *</label><input class="form-field" id="entryDueDate" type="date" value="' + escapeAttr(item.dueDate || item.date || today()) + '" required></div>' +
+        '<div class="form-group"><label for="entryValue">Valor (R$) *</label><input class="form-field" id="entryValue" type="number" min="0.01" step="0.01" placeholder="0,00" value="' + (item.value || '') + '" required></div>' +
+        '<div class="form-group"><label for="entryStatus">Situação *</label><select class="form-field" id="entryStatus"><option ' + selected(item.status, 'A pagar') + '>A pagar</option><option ' + selected(item.status, 'Pago') + '>Pago</option></select></div>' +
+        '<div class="form-group" id="paymentDateGroup"><label for="entryPaymentDate">Data do pagamento *</label><input class="form-field" id="entryPaymentDate" type="date" value="' + escapeAttr(item.paymentDate || (item.status === 'Pago' ? item.date : '')) + '"></div>' +
+        '<div class="form-group"><label for="entryDocument">Documento</label><input class="form-field" id="entryDocument" value="' + escapeAttr(item.document || '') + '" placeholder="Nota fiscal, recibo..." maxlength="100"></div>' +
+        '<div class="form-group full"><label for="entryDescription">Descrição *</label><input class="form-field" id="entryDescription" value="' + escapeAttr(item.description || '') + '" placeholder="Detalhe da movimentação" maxlength="180" required></div>' +
+        '<div class="form-group full"><label for="entryCounterparty">Fornecedor ou cliente</label><input class="form-field" id="entryCounterparty" value="' + escapeAttr(item.counterparty || '') + '" maxlength="150"></div>' +
+        '<div class="form-group full"><label for="entryNotes">Observações</label><textarea class="form-field" id="entryNotes" maxlength="500">' + escapeHtml(item.notes || '') + '</textarea></div></div>' +
+        '<div class="form-actions"><button class="button button-secondary" type="button" onclick="navigate(\'list\')">Cancelar</button><button class="button button-primary" id="saveButton" type="submit">' + (editing ? 'Salvar alterações' : 'Salvar lançamento') + '</button></div></section>' +
+        '<aside class="form-aside"><h3>Competência e caixa</h3><p>A data de competência organiza os relatórios mensais. O vencimento e a data de pagamento permitem acompanhar contas em aberto sem alterar o histórico do lançamento.</p></aside></form>';
+      const typeSelect = document.getElementById('entryType');
+      const statusSelect = document.getElementById('entryStatus');
+      typeSelect.addEventListener('change', updateEntryCategories);
+      statusSelect.addEventListener('change', togglePaymentDate);
+      updateEntryCategories(item.category);
+      togglePaymentDate();
+      document.getElementById('entryForm').addEventListener('submit', saveEntry);
+    }
+
+    function updateEntryCategories(selectedCategory) {
+      const type = document.getElementById('entryType').value;
+      const categories = (state.data ? state.data.accounts : []).filter(function (account) { return account.type === type; });
+      const select = document.getElementById('entryCategory');
+      select.innerHTML = categories.map(function (account) { return '<option value="' + escapeAttr(account.category) + '" ' + selected(selectedCategory, account.category) + '>' + escapeHtml(account.category) + '</option>'; }).join('');
+    }
+
+    function togglePaymentDate() {
+      const paid = document.getElementById('entryStatus').value === 'Pago';
+      const field = document.getElementById('entryPaymentDate');
+      document.getElementById('paymentDateGroup').style.display = paid ? 'grid' : 'none';
+      field.required = paid;
+      if (paid && !field.value) field.value = today();
+    }
+
+    function saveEntry(event) {
+      event.preventDefault();
+      const item = {
+        id: state.editing ? state.editing.id : '',
+        type: document.getElementById('entryType').value,
+        category: document.getElementById('entryCategory').value,
+        date: document.getElementById('entryDate').value,
+        dueDate: document.getElementById('entryDueDate').value,
+        value: Number(document.getElementById('entryValue').value),
+        status: document.getElementById('entryStatus').value,
+        paymentDate: document.getElementById('entryPaymentDate').value,
+        document: document.getElementById('entryDocument').value,
+        description: document.getElementById('entryDescription').value,
+        counterparty: document.getElementById('entryCounterparty').value,
+        notes: document.getElementById('entryNotes').value
+      };
+      const button = document.getElementById('saveButton');
+      button.disabled = true;
+      button.textContent = 'Salvando...';
+      google.script.run.withSuccessHandler(function () {
+        toast(state.editing ? 'Lançamento atualizado.' : 'Lançamento salvo.');
+        state.editing = null;
+        navigate('list');
+        loadDashboardData();
+      }).withFailureHandler(function (error) {
+        button.disabled = false;
+        button.textContent = state.editing ? 'Salvar alterações' : 'Salvar lançamento';
+        showError(error);
+      }).saveTransaction(item);
+    }
+
+    function editTransaction(id) {
+      runRead('getTransaction', id, function (record) {
+        if (!record) return toast('Lançamento não encontrado.', true);
+        navigate('entry');
+        renderEntry(record);
+      }, showError);
+    }
+
+    function removeTransaction(id) {
+      if (!window.confirm('Excluir este lançamento? Esta ação não pode ser desfeita.')) return;
+      google.script.run.withSuccessHandler(function () {
+        toast('Lançamento excluído.');
+        loadCollectionRows();
+        loadDashboardData();
+      }).withFailureHandler(showError).deleteTransaction(id);
+    }
+
+    function loadDashboardData() {
+      runRead('getAppData', undefined, acceptAppData, showError);
+    }
+
+    function showError(error) {
+      const message = error && error.message ? error.message : String(error || 'Falha ao conectar à planilha.');
+      toast(message, true);
+      if (!state.data) showLoadError(error);
+    }
+
+    function toast(message, isError) {
+      const element = document.getElementById('toast');
+      element.textContent = message;
+      element.classList.toggle('error', Boolean(isError));
+      element.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { element.classList.remove('show'); }, 3400);
+    }
+
+    function money(value) {
+      return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 2 }).format(Number(value) || 0);
+    }
+
+    function formatDate(value) {
+      if (!value) return '—';
+      const parts = value.split('-');
+      return parts.length === 3 ? parts[2] + '/' + parts[1] + '/' + parts[0] : value;
+    }
+
+    function today() {
+      const date = new Date();
+      return [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+    }
+
+    function selected(value, option) { return value === option ? 'selected' : ''; }
+    function capitalize(value) { return value ? value.charAt(0).toLocaleUpperCase('pt-BR') + value.slice(1) : ''; }
+    function escapeHtml(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function (char) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]; }); }
+    function escapeAttr(value) { return escapeHtml(value); }
+    function debounce(callback, delay) {
+      let timer;
+      return function () { const args = arguments; clearTimeout(timer); timer = setTimeout(function () { callback.apply(null, args); }, delay); };
+    }
+
+    startApp();
+  </script>
+</body>
+</html>
